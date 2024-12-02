@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
@@ -60,8 +61,8 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
                     case "/help":
                         sendMessage(chatId, "/viewTree - Показать дерево категорий\n" +
-                                "/addElement <название> - Добавить элемент\n" +
-                                "/removeElement <название> - Удалить элемент\n" +
+                                "/addElement <родительский элемент>/<дочерний элемент> (если корневой каталог можно без родительского каталога)\n" +
+                                "/removeElement <родительский элемент>/<дочерний элемент> - Удалить элемент(если корневой каталог можно без родительского каталога)\n" +
                                 "/download - Скачать дерево категорий в формате Excel\n" +
                                 "/upload - Загрузить дерево категорий из Excel");
                         break;
@@ -116,7 +117,7 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
                 StringBuilder parentNames = new StringBuilder();
                 Category parent = category.getParent();
                 while (parent != null) {
-                    parentNames.insert(0, parent.getName() + " "); // Вставляем перед текущим
+                    parentNames.insert(0, parent.getName() + " / "); // Вставляем перед текущим
                     parent = parent.getParent(); // Переходим к следующему уровню родителя
                 }
                 row.createCell(1).setCellValue(parentNames.toString()); // Указываем все родительские категории
@@ -137,35 +138,43 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
     private void handleAddElementCommand(String command, Long chatId) {
         if (command.startsWith("/addElement")) {
-            String[] parts = command.split(" ", 3); // Разделяем команду
+            String[] parts = command.split("/", 2); // Разделяем команду на часть с командой и часть с параметрами
             if (parts.length == 2) {
-                String elementName = parts[1];
-                String response = categoryService.addCategory(elementName, null);
-                sendMessage(chatId, response);
-            } else if (parts.length == 3) {
-                String parentName = parts[1];
-                String elementName = parts[2];
-                String response = categoryService.addCategory(elementName, parentName);
-                sendMessage(chatId, response);
+                String[] args = parts[1].trim().split(" "); // Разделяем параметры по пробелам
+                if (args.length == 1) {
+                    String elementName = args[0].trim(); // Имя элемента
+                    String response = categoryService.addCategory(elementName, null);
+                    sendMessage(chatId, response);
+                } else if (args.length > 1) {
+                    String parentName = args[0].trim(); // Родительский элемент
+                    String elementName = String.join(" ", Arrays.copyOfRange(args, 1, args.length)); // Имя элемента
+                    String response = categoryService.addCategory(elementName, parentName);
+                    sendMessage(chatId, response);
+                } else {
+                    sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
+                            "/addElement <родительский элемент>/<дочерний элемент>");
+                }
             } else {
                 sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
-                        "/addElement <название элемента>\n" +
-                        "/addElement <родительский элемент> <дочерний элемент>");
+                        "/addElement <родительский элемент>/<дочерний элемент>");
             }
         }
     }
 
     private void handleRemoveElementCommand(String command, Long chatId) {
         if (command.startsWith("/removeElement")) {
-            String[] parts = command.split(" ", 2);
-            if (parts.length == 2) {
-                String elementName = parts[1];
-                String response = categoryService.removeCategory(elementName);
-                sendMessage(chatId, response);
-            } else {
-                sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
-                        "/removeElement <название элемента>");
+            // Убираем команду из текста и получаем только название
+            String elementName = command.substring("/removeElement".length()).trim();
+
+            if (elementName.isEmpty()) {
+                sendMessage(chatId, "Ошибка: Не указано название категории. Используйте:\n" +
+                        "/removeElement <название категории>");
+                return;
             }
+
+            // Удаляем категорию
+            String response = categoryService.removeCategory(elementName);
+            sendMessage(chatId, response);
         }
     }
 

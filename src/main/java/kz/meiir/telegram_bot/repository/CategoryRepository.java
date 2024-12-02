@@ -9,8 +9,19 @@ import java.util.Optional;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
+
+    // Поиск категории по имени и отсутствию родителя
+    Category findByNameAndParentIsNull(String name);
+
+    // Поиск категории по имени и указанному родителю
+    Category findByNameAndParent(String name, Category parent);
+
     List<Category> findByParentIsNull();
-    Optional<Category> findByName(String name);
+
+    Category findByName(String name);
+
+
 
     boolean existsByName(String name);
+
 }

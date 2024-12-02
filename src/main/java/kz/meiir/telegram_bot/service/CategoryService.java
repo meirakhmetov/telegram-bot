@@ -39,54 +39,85 @@ public class CategoryService {
         }
     }
 
-    public String addCategory(String name, String parentName) {
-        if (name == null || name.trim().isEmpty()) {
-            return "Название элемента не может быть пустым.";
+    public String addCategory(String categoryPath, String parentName) {
+        // Разделяем путь по символу "/"
+        String[] parts = categoryPath.split("/");
+
+        // Если путь состоит из одной части, работаем как раньше
+        if (parts.length == 1) {
+            return addCategorySimple(parts[0].trim(), parentName);
         }
 
-        if (parentName == null) {
-            // Добавляем корневую категорию
-            if (categoryRepository.existsByName(name)) {
-                return "Элемент с таким названием уже существует.";
+        // Если путь содержит несколько частей, создаем иерархию
+        Category parent = null;
+
+        for (String part : parts) {
+            part = part.trim(); // Убираем лишние пробелы
+            if (part.isEmpty()) continue;
+
+            // Проверяем, существует ли категория с таким именем у текущего родителя
+            Category existingCategory = (parent == null)
+                    ? categoryRepository.findByNameAndParentIsNull(part)
+                    : categoryRepository.findByNameAndParent(part, parent);
+
+            if (existingCategory != null) {
+                parent = existingCategory; // Если категория уже существует, переходим к ней
+            } else {
+                // Создаем новую категорию
+                Category newCategory = new Category();
+                newCategory.setName(part);
+                newCategory.setParent(parent); // Устанавливаем родителя
+                categoryRepository.save(newCategory);
+                parent = newCategory; // Теперь это текущий родитель
             }
-
-            Category category = new Category();
-            category.setName(name);
-            categoryRepository.save(category);
-
-            return "Корневой элемент \"" + name + "\" успешно добавлен.";
-        } else {
-            // Добавляем дочернюю категорию
-            Optional<Category> parent = categoryRepository.findByName(parentName);
-            if (parent.isEmpty()) {
-                return "Родительский элемент \"" + parentName + "\" не найден.";
-            }
-
-            if (categoryRepository.existsByName(name)) {
-                return "Элемент с таким названием уже существует.";
-            }
-
-            Category category = new Category();
-            category.setName(name);
-            category.setParent(parent.get());
-            categoryRepository.save(category);
-
-            return "Элемент \"" + name + "\" успешно добавлен к родителю \"" + parentName + "\".";
         }
+
+        return "Категория(и) добавлены успешно.";
+    }
+
+    // Вспомогательный метод для добавления простой категории
+    private String addCategorySimple(String elementName, String parentName) {
+        if (categoryRepository.existsByName(elementName)) {
+            return "Категория с таким названием уже существует.";
+        }
+
+        Category parent = parentName == null ? null : categoryRepository.findByName(parentName);
+
+        Category newCategory = new Category();
+        newCategory.setName(elementName);
+        newCategory.setParent(parent);
+
+        categoryRepository.save(newCategory);
+        return "Категория добавлена успешно.";
     }
 
     public String removeCategory(String name) {
-        Optional<Category> categoryOptional = categoryRepository.findByName(name);
-        if (categoryOptional.isPresent()) {
-            Category category = categoryOptional.get();
-            // Удаляем все дочерние категории
-            for (Category child : category.getChildren()) {
-                removeCategory(child.getName()); // Рекурсивное удаление
-            }
-            categoryRepository.delete(category); // Удаляем саму категорию
-            return "Категория \"" + name + "\" успешно удалена!";
-        } else {
-            return "Категория с именем \"" + name + "\" не найдена.";
+        // Разделяем путь категории по символу "/"
+        String[] parts = name.split("/");
+
+        if (parts.length == 0) {
+            return "Ошибка: название категории пустое.";
         }
+
+        Category parent = null;
+        Category categoryToDelete = null;
+
+        // Ищем категорию по имени с учётом родителя
+        for (String part : parts) {
+            categoryToDelete = (parent == null)
+                    ? categoryRepository.findByNameAndParentIsNull(part)
+                    : categoryRepository.findByNameAndParent(part, parent);
+
+            if (categoryToDelete == null) {
+                return "Ошибка: Категория \"" + part + "\" не найдена.";
+            }
+
+            parent = categoryToDelete; // Переходим на следующий уровень
+        }
+
+        // Удаляем найденную категорию
+        categoryRepository.delete(categoryToDelete);
+
+        return "Категория \"" + name + "\" успешно удалена.";
     }
 }
