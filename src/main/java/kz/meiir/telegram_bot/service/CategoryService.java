@@ -27,6 +27,7 @@ public class CategoryService {
         return treeBuilder.toString();
     }
 
+
     private void buildTree(Category category, StringBuilder builder, int level) {
         builder.append("  ".repeat(level))
                 .append("- ")
