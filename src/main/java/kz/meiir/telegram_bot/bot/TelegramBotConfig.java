@@ -39,7 +39,8 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
             if ("/help".equals(command)) {
                 sendMessage(chatId, "/viewTree - Показать дерево категорий\n"
-                        + "/addElement <название> - Добавить элемент");
+                        + "/addElement <название> - Добавить элемент\n"
+                        + "/removeElement <название> - Удалить элемент");
             }
 
             if (command.startsWith("/addElement")) {
@@ -57,6 +58,19 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
                     sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
                             "/addElement <название элемента>\n" +
                             "/addElement <родительский элемент> <дочерний элемент>");
+                }
+            }
+
+            // Обработка команды /removeElement
+            if (command.startsWith("/removeElement")) {
+                String[] parts = command.split(" ", 2);
+                if (parts.length == 2) {
+                    String elementName = parts[1];
+                    String response = categoryService.removeCategory(elementName);
+                    sendMessage(chatId, response);
+                } else {
+                    sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
+                            "/removeElement <название элемента>");
                 }
             }
         }

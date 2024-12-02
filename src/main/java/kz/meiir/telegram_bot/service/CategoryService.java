@@ -74,4 +74,19 @@ public class CategoryService {
             return "Элемент \"" + name + "\" успешно добавлен к родителю \"" + parentName + "\".";
         }
     }
+
+    public String removeCategory(String name) {
+        Optional<Category> categoryOptional = categoryRepository.findByName(name);
+        if (categoryOptional.isPresent()) {
+            Category category = categoryOptional.get();
+            // Удаляем все дочерние категории
+            for (Category child : category.getChildren()) {
+                removeCategory(child.getName()); // Рекурсивное удаление
+            }
+            categoryRepository.delete(category); // Удаляем саму категорию
+            return "Категория \"" + name + "\" успешно удалена!";
+        } else {
+            return "Категория с именем \"" + name + "\" не найдена.";
+        }
+    }
 }
