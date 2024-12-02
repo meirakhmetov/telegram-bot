@@ -34,12 +34,16 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
         // Обработка команд
         if (update.hasMessage() && update.getMessage().isCommand()) {
             String command = update.getMessage().getText();
-            // проверка команды /start
+            Long chatId = update.getMessage().getChatId();
+
             if ("/start".equals(command)) {
-                sendMessage(update.getMessage().getChatId(), "Добро пожаловать! Введите /help для списка команд.");
+                sendMessage(chatId, "Добро пожаловать! Введите /help для списка команд.");
             }
-            // обработки команды /viewTree
+
+            System.out.println("Получена команда: " + command);
+
             if ("/viewTree".equals(command)) {
+                System.out.println("Обрабатываем команду /viewTree");
                 String tree = categoryService.getCategoryTree();
                 sendMessage(chatId, tree);
             }

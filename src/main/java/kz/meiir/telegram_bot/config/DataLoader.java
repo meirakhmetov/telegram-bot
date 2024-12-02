@@ -2,19 +2,16 @@ package kz.meiir.telegram_bot.config;
 
 import kz.meiir.telegram_bot.model.Category;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
+@AllArgsConstructor
 public class DataLoader implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;
 
-    public DataLoader(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
-
-    @Override
     public void run(String... args) {
         if (categoryRepository.count() == 0) {
             Category root = new Category();
