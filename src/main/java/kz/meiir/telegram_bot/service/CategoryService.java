@@ -5,6 +5,7 @@ import kz.meiir.telegram_bot.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -34,6 +35,42 @@ public class CategoryService {
 
         for (Category child : category.getChildren()) {
             buildTree(child, builder, level + 1);
+        }
+    }
+
+    public String addCategory(String name, String parentName) {
+        if (name == null || name.trim().isEmpty()) {
+            return "Название элемента не может быть пустым.";
+        }
+
+        if (parentName == null) {
+            // Добавляем корневую категорию
+            if (categoryRepository.existsByName(name)) {
+                return "Элемент с таким названием уже существует.";
+            }
+
+            Category category = new Category();
+            category.setName(name);
+            categoryRepository.save(category);
+
+            return "Корневой элемент \"" + name + "\" успешно добавлен.";
+        } else {
+            // Добавляем дочернюю категорию
+            Optional<Category> parent = categoryRepository.findByName(parentName);
+            if (parent.isEmpty()) {
+                return "Родительский элемент \"" + parentName + "\" не найден.";
+            }
+
+            if (categoryRepository.existsByName(name)) {
+                return "Элемент с таким названием уже существует.";
+            }
+
+            Category category = new Category();
+            category.setName(name);
+            category.setParent(parent.get());
+            categoryRepository.save(category);
+
+            return "Элемент \"" + name + "\" успешно добавлен к родителю \"" + parentName + "\".";
         }
     }
 }

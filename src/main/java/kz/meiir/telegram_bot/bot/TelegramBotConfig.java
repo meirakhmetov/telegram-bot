@@ -36,17 +36,39 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
             String command = update.getMessage().getText();
             Long chatId = update.getMessage().getChatId();
 
+            // команда "/start"
             if ("/start".equals(command)) {
                 sendMessage(chatId, "Добро пожаловать! Введите /help для списка команд.");
             }
 
-            System.out.println("Получена команда: " + command);
-
+            // команда "/viewTree"
             if ("/viewTree".equals(command)) {
                 System.out.println("Обрабатываем команду /viewTree");
                 String tree = categoryService.getCategoryTree();
                 sendMessage(chatId, tree);
             }
+
+            // команда "/addElement"
+            if (command.startsWith("/addElement")) {
+                String[] parts = command.split(" ", 3); // Разделяем команду
+                if (parts.length == 2) {
+                    String elementName = parts[1];
+                    String response = categoryService.addCategory(elementName, null);
+                    sendMessage(chatId, response);
+                } else if (parts.length == 3) {
+                    String parentName = parts[1];
+                    String elementName = parts[2];
+                    String response = categoryService.addCategory(elementName, parentName);
+                    sendMessage(chatId, response);
+                } else {
+                    sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
+                            "/addElement <название элемента>\n" +
+                            "/addElement <родительский элемент> <дочерний элемент>");
+                }
+            }
+
+            System.out.println("Получена команда: " + command);
+
         }
     }
 
