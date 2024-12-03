@@ -52,27 +52,26 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
             if (update.getMessage().isCommand()) {
                 String command = update.getMessage().getText();
-
                 switch (command) {
                     case "/start":
-                        new StartCommand().execute(chatId,"/start");
+                        new StartCommand().execute(chatId,command);
                         break;
 
                     case "/viewTree":
-                        new ViewTreeCommand(categoryService,categoryRepository).execute(chatId,"/viewTree");
+                        new ViewTreeCommand(categoryService,categoryRepository).execute(chatId,command);
 
                         break;
 
                     case "/help":
-                        new HelpCommand().execute(chatId,"/help");
+                        new HelpCommand().execute(chatId,command);
                         break;
 
                     case "/download":
-                        new DownloadCommand(categoryRepository).execute(chatId,"/download");
+                        new DownloadCommand(categoryRepository).execute(chatId,command);
                         break;
 
                     case "/upload":
-                        new UploadCommand(uploadMode).execute(chatId,"/upload");
+                        new UploadCommand(uploadMode).execute(chatId,command);
                         break;
 
                     default:
