@@ -1,5 +1,6 @@
 package kz.meiir.telegram_bot.bot;
 
+import kz.meiir.telegram_bot.config.TelegramBotProperties;
 import kz.meiir.telegram_bot.model.Category;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
 import kz.meiir.telegram_bot.service.CategoryService;
@@ -33,16 +34,23 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class TelegramBotConfig extends TelegramLongPollingBot {
+    private final TelegramBotProperties botProperties;
+
     private final CategoryService categoryService;
     private final CategoryRepository categoryRepository;
     private final Map<Long, Boolean> uploadMode = new HashMap<>();
 
-    @Value("${telegram.bot.username}")
-    private String botUsername;
+    @Override
+    public String getBotUsername() {
+        return botProperties.getUsername();
+    }
 
-    @Getter
-    @Value("${telegram.bot.token}")
-    private String botToken;
+    @Override
+    public String getBotToken() {
+        return botProperties.getToken();
+    }
+
+
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -251,13 +259,5 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
         }
     }
 
-    @Override
-    public String getBotUsername() {
-        return botUsername;
-    }
 
-    @Override
-    public String getBotToken() {
-        return botToken;
-    }
 }
