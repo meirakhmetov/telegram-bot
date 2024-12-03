@@ -38,6 +38,10 @@ public class CategoryService {
     }
 
     public String addCategory(String categoryPath, String parentName) {
+        // Проверяем названия на корректность
+        if (!isValidCategoryName(categoryPath) || (parentName != null && !isValidCategoryName(parentName))) {
+            return "Ошибка: Название категории содержит недопустимые символы.";
+        }
         // Разделяем путь по символу "/"
         String[] parts = categoryPath.split("/");
 
@@ -75,6 +79,10 @@ public class CategoryService {
 
     // Вспомогательный метод для добавления простой категории
     private String addCategorySimple(String elementName, String parentName) {
+        // Проверяем названия на корректность
+        if (!isValidCategoryName(elementName) || (parentName != null && !isValidCategoryName(parentName))) {
+            return "Ошибка: Название категории содержит недопустимые символы.";
+        }
         if (categoryRepository.existsByName(elementName)) {
             return "Категория с таким названием уже существует.";
         }
@@ -90,6 +98,10 @@ public class CategoryService {
     }
 
     public String removeCategory(String name) {
+        if (!isValidCategoryName(name)) {
+            return "Ошибка: Название категории содержит недопустимые символы.";
+        }
+
         // Разделяем путь категории по символу "/"
         String[] parts = name.split("/");
 
@@ -117,5 +129,11 @@ public class CategoryService {
         categoryRepository.delete(categoryToDelete);
 
         return "Категория \"" + name + "\" успешно удалена.";
+    }
+
+    // Метод для проверки допустимости названия категории
+    private boolean isValidCategoryName(String name) {
+        // Название может содержать только буквы, цифры и пробелы
+        return name != null && name.matches("[a-zA-Zа-яА-ЯёЁ0-9\\s]+");
     }
 }
