@@ -158,17 +158,20 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
     private void handleAddElementCommand(String command, Long chatId) {
         if (command.startsWith("/addElement")) {
-            String[] parts = command.split("/", 2); // Разделяем команду на часть с командой и часть с параметрами
-            if (parts.length == 2) {
-                String[] args = parts[1].trim().split(" "); // Разделяем параметры по пробелам
-                if (args.length == 1) {
-                    String elementName = args[0].trim(); // Имя элемента
-                    String response = categoryService.addCategory(elementName, null);
-                    sendMessage(chatId, response);
-                } else if (args.length > 1) {
-                    String parentName = args[0].trim(); // Родительский элемент
-                    String elementName = String.join(" ", Arrays.copyOfRange(args, 1, args.length)); // Имя элемента
+            String[] args = command.split(" ", 2); // Разделяем команду и параметры
+
+            if (args.length == 2) { // Проверяем, есть ли параметры
+                String[] parts = args[1].split("/", 2); // Разделяем параметры по "/"
+
+                if (parts.length == 2) {
+                    String parentName = parts[0].trim(); // Родительский элемент
+                    String elementName = parts[1].trim(); // Дочерний элемент
                     String response = categoryService.addCategory(elementName, parentName);
+                    sendMessage(chatId, response);
+                } else if (parts.length == 1) {
+                    // Если только один элемент без родительского
+                    String elementName = parts[0].trim();
+                    String response = categoryService.addCategory(elementName, null);
                     sendMessage(chatId, response);
                 } else {
                     sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
