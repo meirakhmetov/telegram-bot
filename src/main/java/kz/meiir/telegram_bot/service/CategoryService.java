@@ -59,15 +59,15 @@ public class CategoryService {
 
             // Проверяем, существует ли категория с таким именем у текущего родителя
             Category existingCategory = (parent == null)
-                    ? categoryRepository.findByNameAndParentIsNull(part)
-                    : categoryRepository.findByNameAndParent(part, parent);
+                    ? categoryRepository.findByNameAndParentIsNull(part.toLowerCase())
+                    : categoryRepository.findByNameAndParent(part.toLowerCase(), parent);
 
             if (existingCategory != null) {
                 parent = existingCategory; // Если категория уже существует, переходим к ней
             } else {
                 // Создаем новую категорию
                 Category newCategory = new Category();
-                newCategory.setName(part);
+                newCategory.setName(part.toLowerCase());
                 newCategory.setParent(parent); // Устанавливаем родителя
                 categoryRepository.save(newCategory);
                 parent = newCategory; // Теперь это текущий родитель
@@ -83,14 +83,14 @@ public class CategoryService {
         if (!isValidCategoryName(elementName) || (parentName != null && !isValidCategoryName(parentName))) {
             return "Ошибка: Название категории содержит недопустимые символы.";
         }
-        if (categoryRepository.existsByName(elementName)) {
+        if (categoryRepository.existsByName(elementName.toLowerCase())) {
             return "Категория с таким названием уже существует.";
         }
 
-        Category parent = parentName == null ? null : categoryRepository.findByName(parentName);
+        Category parent = parentName == null ? null : categoryRepository.findByName(parentName.toLowerCase());
 
         Category newCategory = new Category();
-        newCategory.setName(elementName);
+        newCategory.setName(elementName.toLowerCase());
         newCategory.setParent(parent);
 
         categoryRepository.save(newCategory);
@@ -115,8 +115,8 @@ public class CategoryService {
         // Ищем категорию по имени с учётом родителя
         for (String part : parts) {
             categoryToDelete = (parent == null)
-                    ? categoryRepository.findByNameAndParentIsNull(part)
-                    : categoryRepository.findByNameAndParent(part, parent);
+                    ? categoryRepository.findByNameAndParentIsNull(part.toLowerCase())
+                    : categoryRepository.findByNameAndParent(part.toLowerCase(), parent);
 
             if (categoryToDelete == null) {
                 return "Ошибка: Категория \"" + part + "\" не найдена.";

@@ -66,8 +66,12 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
                         break;
 
                     case "/viewTree":
-                        String tree = categoryService.getCategoryTree();
-                        sendMessage(chatId, tree != null ? tree : "Дерево категорий пусто.");
+                        if (categoryRepository.count() == 0) { // Проверяем, есть ли данные в базе
+                            sendMessage(chatId, "Категорий пока нет.");
+                        } else {
+                            String tree = categoryService.getCategoryTree();
+                            sendMessage(chatId, tree);
+                        }
                         break;
 
                     case "/help":
