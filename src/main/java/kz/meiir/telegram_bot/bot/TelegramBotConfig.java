@@ -4,6 +4,7 @@ import kz.meiir.telegram_bot.config.TelegramBotProperties;
 import kz.meiir.telegram_bot.model.Category;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
 import kz.meiir.telegram_bot.service.CategoryService;
+import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -54,6 +55,9 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        // Установите экземпляр бота в утилитах
+        TelegramBotUtils.setBot(this);
+
         if (update.hasMessage()) {
             Long chatId = update.getMessage().getChatId();
 
@@ -62,34 +66,34 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
                 switch (command) {
                     case "/start":
-                        sendMessage(chatId, "Добро пожаловать! Введите /help для списка команд.");
+                        TelegramBotUtils.sendMessage(chatId, "Добро пожаловать! Введите /help для списка команд.");
                         break;
 
                     case "/viewTree":
-                        if (categoryRepository.count() == 0) { // Проверяем, есть ли данные в базе
-                            sendMessage(chatId, "Категорий пока нет.");
+                        if (categoryRepository.count() == 0) {
+                            TelegramBotUtils.sendMessage(chatId, "Категорий пока нет.");
                         } else {
                             String tree = categoryService.getCategoryTree();
-                            sendMessage(chatId, tree);
+                            TelegramBotUtils.sendMessage(chatId, tree);
                         }
                         break;
 
                     case "/help":
-                        sendMessage(chatId, "/viewTree - Показать дерево категорий\n" +
-                                "/addElement <родительский элемент>/<дочерний элемент> (если корневой каталог можно без родительского каталога)\n" +
-                                "/removeElement <родительский элемент>/<дочерний элемент> - Удалить элемент(если корневой каталог можно без родительского каталога)\n" +
+                        TelegramBotUtils.sendMessage(chatId, "/viewTree - Показать дерево категорий\n" +
+                                "/addElement <родительский элемент>/<дочерний элемент>\n" +
+                                "/removeElement <родительский элемент>/<дочерний элемент>\n" +
                                 "/download - Скачать дерево категорий в формате Excel\n" +
                                 "/upload - Загрузить дерево категорий из Excel");
                         break;
 
                     case "/download":
                         String excelFilePath = createExcelFileWithCategoryTree();
-                        sendDocument(chatId, excelFilePath);
+                        TelegramBotUtils.sendDocument(chatId, excelFilePath);
                         break;
 
                     case "/upload":
-                        uploadMode.put(chatId, true); // Включаем режим загрузки
-                        sendMessage(chatId, "Теперь вы можете загрузить файл Excel с деревом категорий.");
+                        uploadMode.put(chatId, true);
+                        TelegramBotUtils.sendMessage(chatId, "Теперь вы можете загрузить файл Excel с деревом категорий.");
                         break;
 
                     default:
@@ -98,25 +102,13 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
                         break;
                 }
             } else if (update.getMessage().hasDocument()) {
-                if (uploadMode.getOrDefault(chatId, false)) { // Проверяем, включён ли режим загрузки
+                if (uploadMode.getOrDefault(chatId, false)) {
                     handleUploadCommand(update);
-                    uploadMode.put(chatId, false); // Выключаем режим загрузки после загрузки файла
+                    uploadMode.put(chatId, false);
                 } else {
-                    sendMessage(chatId, "Сначала используйте команду /upload, чтобы загрузить файл.");
+                    TelegramBotUtils.sendMessage(chatId, "Сначала используйте команду /upload, чтобы загрузить файл.");
                 }
             }
-        }
-    }
-    private void sendMessage(Long chatId, String text) {
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId.toString()); // Чат ID должен быть строкой
-        message.setText(text);
-
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка отправки сообщения: " + e.getMessage());
         }
     }
 
@@ -171,18 +163,18 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
                     String parentName = parts[0].trim(); // Родительский элемент
                     String elementName = parts[1].trim(); // Дочерний элемент
                     String response = categoryService.addCategory(elementName, parentName);
-                    sendMessage(chatId, response);
+                    TelegramBotUtils.sendMessage(chatId, response);
                 } else if (parts.length == 1) {
                     // Если только один элемент без родительского
                     String elementName = parts[0].trim();
                     String response = categoryService.addCategory(elementName, null);
-                    sendMessage(chatId, response);
+                    TelegramBotUtils.sendMessage(chatId, response);
                 } else {
-                    sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
+                    TelegramBotUtils.sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
                             "/addElement <родительский элемент>/<дочерний элемент>");
                 }
             } else {
-                sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
+                TelegramBotUtils.sendMessage(chatId, "Неверный формат команды. Используйте:\n" +
                         "/addElement <родительский элемент>/<дочерний элемент>");
             }
         }
@@ -194,14 +186,14 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
             String elementName = command.substring("/removeElement".length()).trim();
 
             if (elementName.isEmpty()) {
-                sendMessage(chatId, "Ошибка: Не указано название категории. Используйте:\n" +
+                TelegramBotUtils.sendMessage(chatId, "Ошибка: Не указано название категории. Используйте:\n" +
                         "/removeElement <название категории>");
                 return;
             }
 
             // Удаляем категорию
             String response = categoryService.removeCategory(elementName);
-            sendMessage(chatId, response);
+            TelegramBotUtils.sendMessage(chatId, response);
         }
     }
 
@@ -211,14 +203,14 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
         try {
             downloadAndProcessFile(fileId);
-            sendMessage(chatId, "Файл успешно загружен и обработан!");
+            TelegramBotUtils.sendMessage(chatId, "Файл успешно загружен и обработан!");
         } catch (Exception e) {
-            sendMessage(chatId, "Ошибка при загрузке файла: " + e.getMessage());
+            TelegramBotUtils.sendMessage(chatId, "Ошибка при загрузке файла: " + e.getMessage());
         }
     }
 
     private void downloadAndProcessFile(String fileId) throws IOException {
-        try (InputStream inputStream = getFileInputStream(fileId)) {
+        try (InputStream inputStream = TelegramBotUtils.getFileInputStream(fileId)) {
             Workbook workbook = new XSSFWorkbook(inputStream);
             Sheet sheet = workbook.getSheetAt(0);
 
@@ -241,30 +233,4 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
             throw new RuntimeException(e);
         }
     }
-
-
-
-    // Метод для получения InputStream файла
-    private InputStream getFileInputStream(String fileId) throws IOException, TelegramApiException {
-        GetFile getFile = new GetFile();
-        getFile.setFileId(fileId);
-        File file = execute(getFile);
-        return new URL(file.getFileUrl(getBotToken())).openStream();
-    }
-
-    // Метод для отправки документа
-    private void sendDocument(Long chatId, String filePath) {
-        SendDocument sendDocument = new SendDocument();
-        sendDocument.setChatId(chatId.toString());
-        sendDocument.setDocument(new InputFile(new java.io.File(filePath))); // Корректное создание InputFile
-
-        try {
-            execute(sendDocument);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-            System.err.println("Ошибка отправки документа: " + e.getMessage());
-        }
-    }
-
-
 }
