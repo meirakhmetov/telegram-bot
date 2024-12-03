@@ -26,13 +26,16 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class TelegramBotConfig extends TelegramLongPollingBot {
     private final CategoryService categoryService;
     private final CategoryRepository categoryRepository;
+    private final Map<Long, Boolean> uploadMode = new HashMap<>();
 
     @Value("${telegram.bot.username}")
     private String botUsername;
@@ -40,7 +43,7 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
     @Getter
     @Value("${telegram.bot.token}")
     private String botToken;
-
+/*
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
@@ -81,8 +84,59 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
                 handleUploadCommand(update);
             }
         }
-    }
+    }*/
 
+    @Override
+    public void onUpdateReceived(Update update) {
+        if (update.hasMessage()) {
+            Long chatId = update.getMessage().getChatId();
+
+            if (update.getMessage().isCommand()) {
+                String command = update.getMessage().getText();
+
+                switch (command) {
+                    case "/start":
+                        sendMessage(chatId, "Добро пожаловать! Введите /help для списка команд.");
+                        break;
+
+                    case "/viewTree":
+                        String tree = categoryService.getCategoryTree();
+                        sendMessage(chatId, tree != null ? tree : "Дерево категорий пусто.");
+                        break;
+
+                    case "/help":
+                        sendMessage(chatId, "/viewTree - Показать дерево категорий\n" +
+                                "/addElement <родительский элемент>/<дочерний элемент> (если корневой каталог можно без родительского каталога)\n" +
+                                "/removeElement <родительский элемент>/<дочерний элемент> - Удалить элемент(если корневой каталог можно без родительского каталога)\n" +
+                                "/download - Скачать дерево категорий в формате Excel\n" +
+                                "/upload - Загрузить дерево категорий из Excel");
+                        break;
+
+                    case "/download":
+                        String excelFilePath = createExcelFileWithCategoryTree();
+                        sendDocument(chatId, excelFilePath);
+                        break;
+
+                    case "/upload":
+                        uploadMode.put(chatId, true); // Включаем режим загрузки
+                        sendMessage(chatId, "Теперь вы можете загрузить файл Excel с деревом категорий.");
+                        break;
+
+                    default:
+                        handleAddElementCommand(command, chatId);
+                        handleRemoveElementCommand(command, chatId);
+                        break;
+                }
+            } else if (update.getMessage().hasDocument()) {
+                if (uploadMode.getOrDefault(chatId, false)) { // Проверяем, включён ли режим загрузки
+                    handleUploadCommand(update);
+                    uploadMode.put(chatId, false); // Выключаем режим загрузки после загрузки файла
+                } else {
+                    sendMessage(chatId, "Сначала используйте команду /upload, чтобы загрузить файл.");
+                }
+            }
+        }
+    }
     private void sendMessage(Long chatId, String text) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId.toString()); // Чат ID должен быть строкой
