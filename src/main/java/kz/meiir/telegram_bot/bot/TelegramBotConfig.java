@@ -43,48 +43,6 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
     @Getter
     @Value("${telegram.bot.token}")
     private String botToken;
-/*
-    @Override
-    public void onUpdateReceived(Update update) {
-        if (update.hasMessage()) {
-            Long chatId = update.getMessage().getChatId();
-
-            if (update.getMessage().isCommand()) {
-                String command = update.getMessage().getText();
-
-                switch (command) {
-                    case "/start":
-                        sendMessage(chatId, "Добро пожаловать! Введите /help для списка команд.");
-                        break;
-
-                    case "/viewTree":
-                        String tree = categoryService.getCategoryTree();
-                        sendMessage(chatId, tree != null ? tree : "Дерево категорий пусто.");
-                        break;
-
-                    case "/help":
-                        sendMessage(chatId, "/viewTree - Показать дерево категорий\n" +
-                                "/addElement <родительский элемент>/<дочерний элемент> (если корневой каталог можно без родительского каталога)\n" +
-                                "/removeElement <родительский элемент>/<дочерний элемент> - Удалить элемент(если корневой каталог можно без родительского каталога)\n" +
-                                "/download - Скачать дерево категорий в формате Excel\n" +
-                                "/upload - Загрузить дерево категорий из Excel");
-                        break;
-
-                    case "/download":
-                        String excelFilePath = createExcelFileWithCategoryTree();
-                        sendDocument(chatId, excelFilePath);
-                        break;
-
-                    default:
-                        handleAddElementCommand(command, chatId);
-                        handleRemoveElementCommand(command, chatId);
-                        break;
-                }
-            } else if (update.getMessage().hasDocument()) {
-                handleUploadCommand(update);
-            }
-        }
-    }*/
 
     @Override
     public void onUpdateReceived(Update update) {
