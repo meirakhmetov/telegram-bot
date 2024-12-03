@@ -2,18 +2,17 @@ package kz.meiir.telegram_bot.service;
 
 import kz.meiir.telegram_bot.model.Category;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@AllArgsConstructor
 @Service
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
 
     public String getCategoryTree() {
         List<Category> rootCategories = categoryRepository.findByParentIsNull();
