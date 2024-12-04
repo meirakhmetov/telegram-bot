@@ -2,7 +2,26 @@ package kz.meiir.telegram_bot.bot.commands;
 
 import kz.meiir.telegram_bot.service.CategoryService;
 import kz.meiir.telegram_bot.utils.TelegramBotUtils;
-
+/**
+ * Класс {@code AddElementCommand} отвечает за обработку команды "/addElement".
+ * <p>
+ * Команда позволяет добавить новую категорию с указанием родительской категории.
+ * Если родительская категория не указана, элемент добавляется как корневой.
+ * </p>
+ *
+ * <h2>Формат команды:</h2>
+ * <pre>
+ * /addElement &lt;родительский элемент&gt;/&lt;дочерний элемент&gt;
+ * </pre>
+ * <h2>Примеры использования:</h2>
+ * <ul>
+ *     <li>{@code /addElement Electronics/Mobile}</li>
+ *     <li>{@code /addElement Books}</li>
+ * </ul>
+ *
+ * @author Meiir Akhmetov
+ * @version 1.0
+ */
 public class AddElementCommand implements BotCommand{
     private final CategoryService categoryService;
 

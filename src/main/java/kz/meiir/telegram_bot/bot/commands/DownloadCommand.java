@@ -13,19 +13,66 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Команда {@code DownloadCommand} предназначена для генерации и отправки Excel-файла
+ * с деревом категорий в чат Telegram.
+ *
+ * <h2>Описание:</h2>
+ * Этот класс создает Excel-файл, содержащий категории и их родительские категории.
+ * Затем файл отправляется в чат пользователя.
+ *
+ * <h2>Формат Excel-файла:</h2>
+ * <ul>
+ *     <li>Столбец 1: Название категории</li>
+ *     <li>Столбец 2: Полный путь родительских категорий (разделённый через " / ")</li>
+ * </ul>
+ *
+ * <h2>Использование:</h2>
+ * Этот класс используется, когда пользователь отправляет команду <code>/download</code>.
+ *
+ * <h2>Пример вызова:</h2>
+ * <pre>
+ * new DownloadCommand(categoryRepository).execute(chatId, "/download");
+ * </pre>
+ *
+ * @author Meiir Akhmetov
+ * @version 1.0
+ */
+
 public class DownloadCommand implements BotCommand{
     private final CategoryRepository categoryRepository;
-
+    /**
+     * Конструктор для инициализации {@code DownloadCommand}.
+     *
+     * @param categoryRepository репозиторий категорий для получения данных.
+     */
     public DownloadCommand(CategoryRepository categoryRepository) {
         this.categoryRepository = categoryRepository;
     }
 
+    /**
+     * Выполняет команду загрузки дерева категорий и отправляет Excel-файл в чат.
+     *
+     * @param chatId идентификатор чата, куда будет отправлен файл.
+     * @param text   текст команды (не используется в данной реализации).
+     */
     @Override
     public void execute(Long chatId, String text) {
         String excelFilePath = createExcelFileWithCategoryTree();
         TelegramBotUtils.sendDocument(chatId, excelFilePath);
     }
 
+    /**
+     * Генерирует Excel-файл с деревом категорий.
+     *
+     * <h2>Структура данных:</h2>
+     * <ul>
+     *     <li>Категории и их родительские элементы извлекаются из репозитория.</li>
+     *     <li>Родительские категории формируются в виде строки, разделённой " / ".</li>
+     * </ul>
+     *
+     * @return путь к созданному Excel-файлу.
+     */
     private String createExcelFileWithCategoryTree() {
         Workbook workbook = new XSSFWorkbook();
         Sheet sheet = workbook.createSheet("Категории");

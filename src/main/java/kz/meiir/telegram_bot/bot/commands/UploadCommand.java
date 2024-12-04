@@ -10,22 +10,55 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
-
+/**
+ * Команда {@code UploadCommand} используется для загрузки файла Excel с деревом категорий.
+ *
+ * <h2>Описание:</h2>
+ * Этот класс активирует режим загрузки для пользователя, позволяет загружать документ,
+ * обрабатывает его содержимое и добавляет категории в базу данных.
+ *
+ * <h2>Использование:</h2>
+ * <ul>
+ *     <li>Выполнение команды <code>/upload</code> активирует режим загрузки.</li>
+ *     <li>Пользователь может загрузить файл Excel с двумя колонками: название категории и родительская категория.</li>
+ * </ul>
+ *
+ * @author Meiir Akhmetov
+ * @version 1.0
+ */
 public class UploadCommand implements BotCommand {
     private final Map<Long, Boolean> uploadMode;
     private final CategoryService categoryService;
 
+    /**
+     * Конструктор для создания экземпляра {@code UploadCommand}.
+     *
+     * @param uploadMode   Состояние режима загрузки для пользователей (по chatId).
+     * @param categoryService Сервис для работы с категориями.
+     */
     public UploadCommand(Map<Long, Boolean> uploadMode, CategoryService categoryService) {
         this.uploadMode = uploadMode;
         this.categoryService = categoryService;
     }
 
+    /**
+     * Активирует режим загрузки для указанного пользователя.
+     *
+     * @param chatId  идентификатор чата, откуда пришла команда.
+     * @param command текст команды (например, "/upload").
+     */
     @Override
     public void execute(Long chatId, String command) {
         uploadMode.put(chatId, true);
         TelegramBotUtils.sendMessage(chatId, "Теперь вы можете загрузить файл Excel с деревом категорий.");
     }
 
+    /**
+     * Обрабатывает загруженный файл Excel и добавляет категории в базу данных.
+     *
+     * @param update объект {@link Update}, содержащий данные о загруженном документе.
+     * @throws Exception если произошла ошибка обработки файла.
+     */
     public void handleDocument(Update update) throws Exception {
         Long chatId = update.getMessage().getChatId();
         String fileId = update.getMessage().getDocument().getFileId();
@@ -62,6 +95,12 @@ public class UploadCommand implements BotCommand {
         }
     }
 
+    /**
+     * Загружает и обрабатывает файл Excel, добавляя категории в базу данных.
+     *
+     * @param fileId идентификатор файла, загруженного в Telegram.
+     * @throws IOException если произошла ошибка при чтении файла.
+     */
     private void downloadAndProcessFile(String fileId) throws IOException {
         try (InputStream inputStream = TelegramBotUtils.getFileInputStream(fileId)) {
             Workbook workbook = new XSSFWorkbook(inputStream);
