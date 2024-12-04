@@ -75,36 +75,41 @@ public class CategoryService {
      */
     public String addCategory(String elementName, String parentName) {
         // Проверяем названия на корректность
-        if (!isValidCategoryName(elementName) || (parentName != null && !isValidCategoryName(parentName))) {
+        if (!isValidCategoryName(elementName)) {
             return "Ошибка: Название категории содержит недопустимые символы.";
         }
 
-        // Проверяем, существует ли родительская категория, если она указана
+        if (parentName != null && !isValidCategoryName(parentName)) {
+            return "Ошибка: Название родительской категории содержит недопустимые символы.";
+        }
+
+        // Поиск родительской категории
         Category parent = parentName == null ? null : categoryRepository.findByName(parentName.toLowerCase());
 
         if (parentName != null && parent == null) {
             return "Ошибка: Родительская категория \"" + parentName + "\" не найдена.";
         }
 
-        // Проверка на существование категории с таким же именем у указанного родителя
-        if (parent != null) {
-            if (categoryRepository.findByNameAndParent(elementName.toLowerCase(), parent) != null) {
-                return "Ошибка: Категория с таким названием уже существует в родительской категории \"" + parentName + "\".";
-            }
-        } else {
-            // Если родитель не указан, проверяем только на существование в верхнем уровне
-            if (categoryRepository.existsByName(elementName.toLowerCase())) {
-                return "Ошибка: Категория с таким названием уже существует.";
-            }
+        // Проверка на существование категории в рамках родителя
+        boolean categoryExists = parent != null
+                ? categoryRepository.findByNameAndParent(elementName.toLowerCase(), parent) != null
+                : categoryRepository.existsByName(elementName.toLowerCase());
+
+        if (categoryExists) {
+            return parent != null
+                    ? "Ошибка: Категория с таким названием уже существует в родительской категории \"" + parentName + "\"."
+                    : "Ошибка: Категория с таким названием уже существует на верхнем уровне.";
         }
 
-        // Создаем новую категорию
+        // Создание и сохранение новой категории
         Category newCategory = new Category();
         newCategory.setName(elementName.toLowerCase());
-        newCategory.setParent(parent); // Устанавливаем родителя
+        newCategory.setParent(parent);
+
         categoryRepository.save(newCategory);
 
-        return "Категория добавлена успешно.";
+        return "Категория \"" + elementName + "\" успешно добавлена"
+                + (parent != null ? " в родительскую категорию \"" + parentName + "\"." : ".");
     }
 
     /**
