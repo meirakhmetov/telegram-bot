@@ -46,22 +46,36 @@ telegram.bot.username=Ваш_Юзернейм_Бота
 telegram.bot.token=Ваш_Токен_Бота
 
 spring.datasource.url=jdbc:postgresql://localhost:5432/ваша_база_данных
+
 spring.datasource.username=ваш_пользователь
+
 spring.datasource.password=ваш_пароль
+
 spring.jpa.hibernate.ddl-auto=update
+
+
 ## Запуск приложения
 Для запуска приложения используйте команду:
 
 bash
-Копировать код
 mvn spring-boot:run
+
 ## Использование
 Найдите вашего бота в Telegram и начните с ним диалог, набрав команды "/start".
+
 Используйте команды:
+
 /viewTree - Показать дерево категорий
+
 /addElement <название элемента>
+
 /addElement <родительский элемент>/<дочерний элемент>
+
 /removeElement <родительский элемент>/<дочерний элемент>
+
 /removeElement <название элемента>
+
 /download - Скачать дерево категорий в формате Excel
+
 /upload - Загрузить дерево категорий из Excel
+
