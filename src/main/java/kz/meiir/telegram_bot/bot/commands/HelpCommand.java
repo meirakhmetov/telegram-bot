@@ -27,8 +27,10 @@ public class HelpCommand implements BotCommand{
     @Override
     public void execute(Long chatId, String text) {
         TelegramBotUtils.sendMessage(chatId, "/viewTree - Показать дерево категорий\n" +
+                "/addElement <название элемента>\n" +
                 "/addElement <родительский элемент>/<дочерний элемент>\n" +
                 "/removeElement <родительский элемент>/<дочерний элемент>\n" +
+                "/removeElement <название элемента>\n" +
                 "/download - Скачать дерево категорий в формате Excel\n" +
                 "/upload - Загрузить дерево категорий из Excel");
     }
