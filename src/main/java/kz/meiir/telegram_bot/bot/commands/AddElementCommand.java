@@ -25,15 +25,32 @@ import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 public class AddElementCommand implements BotCommand{
     private final CategoryService categoryService;
 
+    /**
+     * Конструктор для создания команды {@code AddElementCommand}.
+     *
+     * @param categoryService сервис для работы с категориями.
+     */
     public AddElementCommand(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
+    /**
+     * Выполняет команду "/addElement", вызывая соответствующий обработчик.
+     *
+     * @param chatId идентификатор чата, в который отправляется сообщение.
+     * @param text   текст команды (например, "/addElement Electronics/Mobile").
+     */
     @Override
     public void execute(Long chatId, String text) {
         handleAddElementCommand(text, chatId);
     }
 
+    /**
+     * Обрабатывает команду "/addElement" и добавляет категорию.
+     *
+     * @param command текст команды.
+     * @param chatId  идентификатор чата, в который отправляется сообщение.
+     */
     private void handleAddElementCommand(String command, Long chatId) {
         if (command.startsWith("/addElement")) {
             String[] args = command.split(" ", 2); // Разделяем команду и параметры

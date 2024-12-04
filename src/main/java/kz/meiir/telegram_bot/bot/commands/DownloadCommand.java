@@ -38,7 +38,6 @@ import java.util.List;
  * @author Meiir Akhmetov
  * @version 1.0
  */
-
 public class DownloadCommand implements BotCommand{
     private final CategoryRepository categoryRepository;
     /**

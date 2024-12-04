@@ -69,76 +69,41 @@ public class CategoryService {
     /**
      * Добавляет новую категорию или иерархию категорий.
      *
-     * @param categoryPath путь к категории, которую необходимо добавить
+     * @param elementName имя категории, которую необходимо добавить
      * @param parentName имя родительской категории
      * @return результат операции в виде сообщения
      */
-    public String addCategory(String categoryPath, String parentName) {
-        // Проверяем названия на корректность
-        if (!isValidCategoryName(categoryPath) || (parentName != null && !isValidCategoryName(parentName))) {
-            return "Ошибка: Название категории содержит недопустимые символы.";
-        }
-        // Разделяем путь по символу "/"
-        String[] parts = categoryPath.split("/");
-
-        // Если путь состоит из одной части, работаем как раньше
-        if (parts.length == 1) {
-            return addCategorySimple(parts[0].trim(), parentName);
-        }
-
-        // Если путь содержит несколько частей, создаем иерархию
-        Category parent = null;
-
-        for (String part : parts) {
-            part = part.trim(); // Убираем лишние пробелы
-            if (part.isEmpty()) continue;
-
-            // Проверяем, существует ли категория с таким именем у текущего родителя
-            Category existingCategory = (parent == null)
-                    ? categoryRepository.findByNameAndParentIsNull(part.toLowerCase())
-                    : categoryRepository.findByNameAndParent(part.toLowerCase(), parent);
-
-            if (existingCategory != null) {
-                parent = existingCategory; // Если категория уже существует, переходим к ней
-            } else {
-                // Создаем новую категорию
-                Category newCategory = new Category();
-                newCategory.setName(part.toLowerCase());
-                newCategory.setParent(parent); // Устанавливаем родителя
-                categoryRepository.save(newCategory);
-                parent = newCategory; // Теперь это текущий родитель
-            }
-        }
-
-        return "Категория(и) добавлены успешно.";
-    }
-
-    /**
-     * Вспомогательный метод для добавления простой категории.
-     *
-     * <p>Этот метод проверяет корректность названия категории, проверяет, существует ли категория с
-     * таким именем, и, если нет, создаёт новую категорию и сохраняет её в репозитории.</p>
-     *
-     * @param elementName название категории, которую необходимо добавить
-     * @param parentName имя родительской категории, если она указана
-     * @return результат операции в виде сообщения о результате добавления категории
-     */
-    private String addCategorySimple(String elementName, String parentName) {
+    public String addCategory(String elementName, String parentName) {
         // Проверяем названия на корректность
         if (!isValidCategoryName(elementName) || (parentName != null && !isValidCategoryName(parentName))) {
             return "Ошибка: Название категории содержит недопустимые символы.";
         }
-        if (categoryRepository.existsByName(elementName.toLowerCase())) {
-            return "Категория с таким названием уже существует.";
-        }
 
+        // Проверяем, существует ли родительская категория, если она указана
         Category parent = parentName == null ? null : categoryRepository.findByName(parentName.toLowerCase());
 
+        if (parentName != null && parent == null) {
+            return "Ошибка: Родительская категория \"" + parentName + "\" не найдена.";
+        }
+
+        // Проверка на существование категории с таким же именем у указанного родителя
+        if (parent != null) {
+            if (categoryRepository.findByNameAndParent(elementName.toLowerCase(), parent) != null) {
+                return "Ошибка: Категория с таким названием уже существует в родительской категории \"" + parentName + "\".";
+            }
+        } else {
+            // Если родитель не указан, проверяем только на существование в верхнем уровне
+            if (categoryRepository.existsByName(elementName.toLowerCase())) {
+                return "Ошибка: Категория с таким названием уже существует.";
+            }
+        }
+
+        // Создаем новую категорию
         Category newCategory = new Category();
         newCategory.setName(elementName.toLowerCase());
-        newCategory.setParent(parent);
-
+        newCategory.setParent(parent); // Устанавливаем родителя
         categoryRepository.save(newCategory);
+
         return "Категория добавлена успешно.";
     }
 
