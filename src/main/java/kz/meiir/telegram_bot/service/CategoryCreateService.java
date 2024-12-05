@@ -2,6 +2,7 @@ package kz.meiir.telegram_bot.service;
 
 import kz.meiir.telegram_bot.model.Category;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
+import kz.meiir.telegram_bot.validation.CategoryNameValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +13,11 @@ public class CategoryCreateService {
     private final CategoryRepository categoryRepository;
 
     public String addCategory(String elementName, String parentName) {
-        if (!isValidCategoryName(elementName)) {
+        if (CategoryNameValidator.isValidCategoryName(elementName)) {
             return "Ошибка: Название категории содержит недопустимые символы.";
         }
 
-        if (parentName != null && !isValidCategoryName(parentName)) {
+        if (parentName != null && CategoryNameValidator.isValidCategoryName(elementName)) {
             return "Ошибка: Название родительской категории содержит недопустимые символы.";
         }
 
@@ -44,9 +45,5 @@ public class CategoryCreateService {
 
         return "Категория \"" + elementName + "\" успешно добавлена"
                 + (parent != null ? " в родительскую категорию \"" + parentName + "\"." : ".");
-    }
-
-    private boolean isValidCategoryName(String name) {
-        return name != null && name.matches("[a-zA-Zа-яА-ЯёЁ0-9\\s]+");
     }
 }
