@@ -29,137 +29,19 @@ import java.util.List;
 @Service
 public class CategoryService {
 
-    private final CategoryRepository categoryRepository;
+    private final CategoryTreeService categoryTreeService;
+    private final CategoryCreateService categoryCreateService;
+    private final CategoryDeleteService categoryDeleteService;
 
-    /**
-     * Получает иерархию категорий в виде строки.
-     *
-     * @return строка, представляющая иерархию категорий
-     */
     public String getCategoryTree() {
-        List<Category> rootCategories = categoryRepository.findByParentIsNull();
-        StringBuilder treeBuilder = new StringBuilder();
-        for (Category root : rootCategories) {
-            buildTree(root, treeBuilder, 0);
-        }
-        return treeBuilder.toString();
+        return categoryTreeService.getCategoryTree();
     }
 
-    /**
-     * Рекурсивно строит строковое представление иерархии категорий.
-     *
-     * <p>Метод добавляет в {@link StringBuilder} название категории с отступом, соответствующим
-     * уровню вложенности. Затем рекурсивно вызывает себя для всех дочерних категорий.</p>
-     *
-     * @param category текущая категория, для которой строится представление
-     * @param builder {@link StringBuilder}, в который добавляется строковое представление
-     * @param level уровень вложенности категории, используется для формирования отступов
-     */
-    private void buildTree(Category category, StringBuilder builder, int level) {
-        builder.append("  ".repeat(level))
-                .append("- ")
-                .append(category.getName())
-                .append("\n");
-
-        for (Category child : category.getChildren()) {
-            buildTree(child, builder, level + 1);
-        }
-    }
-
-    /**
-     * Добавляет новую категорию или иерархию категорий.
-     *
-     * @param elementName имя категории, которую необходимо добавить
-     * @param parentName имя родительской категории
-     * @return результат операции в виде сообщения
-     */
     public String addCategory(String elementName, String parentName) {
-        // Проверяем названия на корректность
-        if (!isValidCategoryName(elementName)) {
-            return "Ошибка: Название категории содержит недопустимые символы.";
-        }
-
-        if (parentName != null && !isValidCategoryName(parentName)) {
-            return "Ошибка: Название родительской категории содержит недопустимые символы.";
-        }
-
-        // Поиск родительской категории
-        Category parent = parentName == null ? null : categoryRepository.findByName(parentName.toLowerCase());
-
-        if (parentName != null && parent == null) {
-            return "Ошибка: Родительская категория \"" + parentName + "\" не найдена.";
-        }
-
-        // Проверка на существование категории в рамках родителя
-        boolean categoryExists = parent != null
-                ? categoryRepository.findByNameAndParent(elementName.toLowerCase(), parent) != null
-                : categoryRepository.existsByName(elementName.toLowerCase());
-
-        if (categoryExists) {
-            return parent != null
-                    ? "Ошибка: Категория с таким названием уже существует в родительской категории \"" + parentName + "\"."
-                    : "Ошибка: Категория с таким названием уже существует на верхнем уровне.";
-        }
-
-        // Создание и сохранение новой категории
-        Category newCategory = new Category();
-        newCategory.setName(elementName.toLowerCase());
-        newCategory.setParent(parent);
-
-        categoryRepository.save(newCategory);
-
-        return "Категория \"" + elementName + "\" успешно добавлена"
-                + (parent != null ? " в родительскую категорию \"" + parentName + "\"." : ".");
+        return categoryCreateService.addCategory(elementName, parentName);
     }
 
-    /**
-     * Удаляет категорию по имени.
-     *
-     * @param name имя категории, которую необходимо удалить
-     * @return результат операции в виде сообщения
-     */
     public String removeCategory(String name) {
-        if (!isValidCategoryName(name)) {
-            return "Ошибка: Название категории содержит недопустимые символы.";
-        }
-
-        // Разделяем путь категории по символу "/"
-        String[] parts = name.split("/");
-
-        if (parts.length == 0) {
-            return "Ошибка: название категории пустое.";
-        }
-
-        Category parent = null;
-        Category categoryToDelete = null;
-
-        // Ищем категорию по имени с учётом родителя
-        for (String part : parts) {
-            categoryToDelete = (parent == null)
-                    ? categoryRepository.findByNameAndParentIsNull(part.toLowerCase())
-                    : categoryRepository.findByNameAndParent(part.toLowerCase(), parent);
-
-            if (categoryToDelete == null) {
-                return "Ошибка: Категория \"" + part + "\" не найдена.";
-            }
-
-            parent = categoryToDelete; // Переходим на следующий уровень
-        }
-
-        // Удаляем найденную категорию
-        categoryRepository.delete(categoryToDelete);
-
-        return "Категория \"" + name + "\" успешно удалена.";
-    }
-
-    /**
-     * Проверяет допустимость названия категории.
-     *
-     * @param name название категории
-     * @return true, если название допустимо; false в противном случае
-     */
-    private boolean isValidCategoryName(String name) {
-        // Название может содержать только буквы, цифры и пробелы
-        return name != null && name.matches("[a-zA-Zа-яА-ЯёЁ0-9\\s]+");
+        return categoryDeleteService.removeCategory(name);
     }
 }
