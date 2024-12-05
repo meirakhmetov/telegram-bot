@@ -1,6 +1,6 @@
 package kz.meiir.telegram_bot.bot.commands;
 
-import kz.meiir.telegram_bot.service.CategoryService;
+import kz.meiir.telegram_bot.service.CategoryServiceFacade;
 import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -28,17 +28,17 @@ import java.util.Map;
  */
 public class UploadCommand implements BotCommand {
     private final Map<Long, Boolean> uploadMode;
-    private final CategoryService categoryService;
+    private final CategoryServiceFacade categoryServiceFacade;
 
     /**
      * Конструктор для создания экземпляра {@code UploadCommand}.
      *
      * @param uploadMode   Состояние режима загрузки для пользователей (по chatId).
-     * @param categoryService Сервис для работы с категориями.
+     * @param categoryServiceFacade Сервис для работы с категориями.
      */
-    public UploadCommand(Map<Long, Boolean> uploadMode, CategoryService categoryService) {
+    public UploadCommand(Map<Long, Boolean> uploadMode, CategoryServiceFacade categoryServiceFacade) {
         this.uploadMode = uploadMode;
-        this.categoryService = categoryService;
+        this.categoryServiceFacade = categoryServiceFacade;
     }
 
     /**
@@ -77,11 +77,11 @@ public class UploadCommand implements BotCommand {
 
                     // Добавляем родительскую категорию, если её ещё нет
                     if (parentName != null && !parentName.isEmpty()) {
-                        categoryService.addCategory(parentName, null);
+                        categoryServiceFacade.addCategory(parentName, null);
                     }
 
                     // Добавляем категорию
-                    categoryService.addCategory(categoryName, parentName);
+                    categoryServiceFacade.addCategory(categoryName, parentName);
                 }
             }
 
@@ -116,9 +116,9 @@ public class UploadCommand implements BotCommand {
 
                     // Если родительское имя указано, сначала добавляем родительскую категорию, если она отсутствует
                     if (parentName != null && !parentName.isEmpty()) {
-                        categoryService.addCategory(parentName, null); // Сначала добавляем родителя
+                        categoryServiceFacade.addCategory(parentName, null); // Сначала добавляем родителя
                     }
-                    categoryService.addCategory(categoryName, parentName); // Добавление категории с родителем
+                    categoryServiceFacade.addCategory(categoryName, parentName); // Добавление категории с родителем
                 }
             }
         } catch (TelegramApiException e) {

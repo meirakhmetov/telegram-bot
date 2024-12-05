@@ -1,11 +1,8 @@
 package kz.meiir.telegram_bot.service;
 
-import kz.meiir.telegram_bot.model.Category;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * Сервис {@code CategoryService} для управления категориями.
@@ -27,7 +24,7 @@ import java.util.List;
  */
 @AllArgsConstructor
 @Service
-public class CategoryService {
+public class CategoryServiceFacade {
 
     private final CategoryTreeService categoryTreeService;
     private final CategoryCreateService categoryCreateService;

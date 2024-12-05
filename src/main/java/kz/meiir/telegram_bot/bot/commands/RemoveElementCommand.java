@@ -1,6 +1,6 @@
 package kz.meiir.telegram_bot.bot.commands;
 
-import kz.meiir.telegram_bot.service.CategoryService;
+import kz.meiir.telegram_bot.service.CategoryServiceFacade;
 import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 
 /**
@@ -22,15 +22,15 @@ import kz.meiir.telegram_bot.utils.TelegramBotUtils;
  */
 
 public class RemoveElementCommand implements BotCommand{
-    private final CategoryService categoryService;
+    private final CategoryServiceFacade categoryServiceFacade;
 
     /**
      * Конструктор для инициализации {@code RemoveElementCommand}.
      *
-     * @param categoryService сервис для управления категориями.
+     * @param categoryServiceFacade сервис для управления категориями.
      */
-    public RemoveElementCommand(CategoryService categoryService) {
-        this.categoryService = categoryService;
+    public RemoveElementCommand(CategoryServiceFacade categoryServiceFacade) {
+        this.categoryServiceFacade = categoryServiceFacade;
     }
 
     /**
@@ -66,7 +66,7 @@ public class RemoveElementCommand implements BotCommand{
             }
 
             // Удаляем категорию через CategoryService
-            String response = categoryService.removeCategory(elementName);
+            String response = categoryServiceFacade.removeCategory(elementName);
             TelegramBotUtils.sendMessage(chatId, response);
         }
     }

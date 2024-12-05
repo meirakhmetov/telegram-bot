@@ -3,7 +3,7 @@ package kz.meiir.telegram_bot.bot;
 import kz.meiir.telegram_bot.bot.commands.*;
 import kz.meiir.telegram_bot.config.TelegramBotProperties;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
-import kz.meiir.telegram_bot.service.CategoryService;
+import kz.meiir.telegram_bot.service.CategoryServiceFacade;
 import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,7 +36,7 @@ import java.util.Map;
 public class TelegramBotConfig extends TelegramLongPollingBot {
     private final TelegramBotProperties botProperties;
 
-    private final CategoryService categoryService;
+    private final CategoryServiceFacade categoryServiceFacade;
     private final CategoryRepository categoryRepository;
     private final Map<Long, Boolean> uploadMode = new HashMap<>();
 
@@ -104,18 +104,18 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
 
         Map<String, BotCommand> commandHandlers = Map.of(
                 "/start", new StartCommand(),
-                "/viewTree", new ViewTreeCommand(categoryService, categoryRepository),
+                "/viewTree", new ViewTreeCommand(categoryServiceFacade, categoryRepository),
                 "/help", new HelpCommand(),
                 "/download", new DownloadCommand(categoryRepository),
-                "/upload", new UploadCommand(uploadMode, categoryService)
+                "/upload", new UploadCommand(uploadMode, categoryServiceFacade)
         );
 
         BotCommand handler = commandHandlers.get(command);
         if (handler != null) {
             handler.execute(chatId, command);
         } else {
-            new AddElementCommand(categoryService).execute(chatId, command);
-            new RemoveElementCommand(categoryService).execute(chatId, command);
+            new AddElementCommand(categoryServiceFacade).execute(chatId, command);
+            new RemoveElementCommand(categoryServiceFacade).execute(chatId, command);
         }
     }
 
@@ -133,7 +133,7 @@ public class TelegramBotConfig extends TelegramLongPollingBot {
      */
     private void handleUploadCommand(Update update, Long chatId) throws Exception {
         if (uploadMode.getOrDefault(chatId, false)) {
-            new UploadCommand(uploadMode, categoryService).handleDocument(update);
+            new UploadCommand(uploadMode, categoryServiceFacade).handleDocument(update);
         } else {
             TelegramBotUtils.sendMessage(chatId, "Сначала используйте команду /upload, чтобы загрузить файл.");
         }

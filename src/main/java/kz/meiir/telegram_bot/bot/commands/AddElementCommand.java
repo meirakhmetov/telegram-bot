@@ -1,6 +1,6 @@
 package kz.meiir.telegram_bot.bot.commands;
 
-import kz.meiir.telegram_bot.service.CategoryService;
+import kz.meiir.telegram_bot.service.CategoryServiceFacade;
 import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 /**
  * Класс {@code AddElementCommand} отвечает за обработку команды "/addElement".
@@ -23,15 +23,15 @@ import kz.meiir.telegram_bot.utils.TelegramBotUtils;
  * @version 1.0
  */
 public class AddElementCommand implements BotCommand{
-    private final CategoryService categoryService;
+    private final CategoryServiceFacade categoryServiceFacade;
 
     /**
      * Конструктор для создания команды {@code AddElementCommand}.
      *
-     * @param categoryService сервис для работы с категориями.
+     * @param categoryServiceFacade сервис для работы с категориями.
      */
-    public AddElementCommand(CategoryService categoryService) {
-        this.categoryService = categoryService;
+    public AddElementCommand(CategoryServiceFacade categoryServiceFacade) {
+        this.categoryServiceFacade = categoryServiceFacade;
     }
 
     /**
@@ -61,12 +61,12 @@ public class AddElementCommand implements BotCommand{
                 if (parts.length == 2) {
                     String parentName = parts[0].trim(); // Родительский элемент
                     String elementName = parts[1].trim(); // Дочерний элемент
-                    String response = categoryService.addCategory(elementName, parentName);
+                    String response = categoryServiceFacade.addCategory(elementName, parentName);
                     TelegramBotUtils.sendMessage(chatId, response);
                 } else if (parts.length == 1) {
                     // Если только один элемент без родительского
                     String elementName = parts[0].trim();
-                    String response = categoryService.addCategory(elementName, null);
+                    String response = categoryServiceFacade.addCategory(elementName, null);
                     TelegramBotUtils.sendMessage(chatId, response);
                 } else {
                     TelegramBotUtils.sendMessage(chatId, "Неверный формат команды. Используйте:\n" +

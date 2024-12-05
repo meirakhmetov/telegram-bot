@@ -1,7 +1,7 @@
 package kz.meiir.telegram_bot.bot.commands;
 
 import kz.meiir.telegram_bot.repository.CategoryRepository;
-import kz.meiir.telegram_bot.service.CategoryService;
+import kz.meiir.telegram_bot.service.CategoryServiceFacade;
 import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 
 /**
@@ -18,16 +18,16 @@ import kz.meiir.telegram_bot.utils.TelegramBotUtils;
  * @version 1.0
  */
 public class ViewTreeCommand implements BotCommand{
-    private final CategoryService categoryService;
+    private final CategoryServiceFacade categoryServiceFacade;
     private final CategoryRepository categoryRepository;
     /**
      * Конструктор для создания экземпляра {@code ViewTreeCommand}.
      *
-     * @param categoryService Сервис для работы с категориями.
+     * @param categoryServiceFacade Сервис для работы с категориями.
      * @param categoryRepository Репозиторий для доступа к данным категорий.
      */
-    public ViewTreeCommand(CategoryService categoryService, CategoryRepository categoryRepository) {
-        this.categoryService = categoryService;
+    public ViewTreeCommand(CategoryServiceFacade categoryServiceFacade, CategoryRepository categoryRepository) {
+        this.categoryServiceFacade = categoryServiceFacade;
         this.categoryRepository = categoryRepository;
     }
     /**
@@ -44,7 +44,7 @@ public class ViewTreeCommand implements BotCommand{
         if (categoryRepository.count() == 0) {
             TelegramBotUtils.sendMessage(chatId, "Категорий пока нет.");
         } else {
-            String tree = categoryService.getCategoryTree();
+            String tree = categoryServiceFacade.getCategoryTree();
             TelegramBotUtils.sendMessage(chatId, tree);
         }
     }

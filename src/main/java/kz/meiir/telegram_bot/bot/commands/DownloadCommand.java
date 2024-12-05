@@ -2,7 +2,6 @@ package kz.meiir.telegram_bot.bot.commands;
 
 import kz.meiir.telegram_bot.model.Category;
 import kz.meiir.telegram_bot.repository.CategoryRepository;
-import kz.meiir.telegram_bot.service.CategoryService;
 import kz.meiir.telegram_bot.utils.TelegramBotUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
